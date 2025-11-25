@@ -1,0 +1,222 @@
+{
+  "name": "Goldpreis via HTTP Request",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        -112
+      ],
+      "id": "9811549a-3200-4bad-a95a-f7ddf5a0712d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Durchsuche das Web nach dem aktuellen Goldkurs und mache mir für die nächste woche eine prognose für den Goldkurs\nIch möchte die ausgabe von XAUUSD haben. Antworte kurz und knapp.\nAktuell:\nNächste Woche Spanne:\nNächsten Monat Spanne:"
+            }
+          ]
+        },
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "medium"
+          }
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        -112
+      ],
+      "id": "b6cc1883-0138-4d95-82a8-41ca91300d75",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "RM1IquGkfJE2HXah",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -112
+      ],
+      "id": "fcde0155-5790-4b8e-9b2f-545842725a54",
+      "name": "Markdown",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output[0].content[0].text",
+        "options": {
+          "encoding": "utf8",
+          "fileName": "D:\\n8n\\Workflows\\Goldpreis.csv"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        -112
+      ],
+      "id": "2a2e371c-d1ce-442d-8c13-fb1b38514a29",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=D:/n8n/Workflows/goldpreisprognose/goldpreis_{{ $now.toFormat('yyyy-MM-dd_HH-mm-ss') }}.txt",
+        "options": {
+          "append": "={{ false }}"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -112
+      ],
+      "id": "254c3b35-2761-49a1-8458-774f23371b96",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {},
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -896,
+        80
+      ],
+      "id": "16feb5c9-8c55-4e83-83ac-dd82fd3bc645",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5b0327b9-cbc1-49be-8be6-cb69506efecb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "55fdd603f1ecc73fc8653975ae64ce19e4673e2151c76146d44e131bf6fa0932"
+  },
+  "id": "QjT9N2Z4X5w0DGck",
+  "tags": [
+    {
+      "updatedAt": "2025-11-19T12:13:27.453Z",
+      "createdAt": "2025-11-19T12:13:27.453Z",
+      "id": "EiEvG1dIwDZZ2nr6",
+      "name": "Trading"
+    },
+    {
+      "updatedAt": "2025-11-19T12:08:50.837Z",
+      "createdAt": "2025-11-19T12:08:50.837Z",
+      "id": "cMCbBoVKrVN7VySu",
+      "name": "Gold"
+    },
+    {
+      "updatedAt": "2025-11-19T12:08:50.845Z",
+      "createdAt": "2025-11-19T12:08:50.845Z",
+      "id": "fSTqv8EoJUTW6g2y",
+      "name": "OpenAI"
+    },
+    {
+      "updatedAt": "2025-11-19T12:13:27.445Z",
+      "createdAt": "2025-11-19T12:13:27.445Z",
+      "id": "huR2jkplMEj2YU87",
+      "name": "GPT-4"
+    },
+    {
+      "updatedAt": "2025-11-19T12:08:50.851Z",
+      "createdAt": "2025-11-19T12:08:50.851Z",
+      "id": "p2egFr28kgNtagIy",
+      "name": "Finanzen"
+    }
+  ]
+}
