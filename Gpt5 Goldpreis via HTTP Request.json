@@ -1,0 +1,221 @@
+{
+  "name": "Goldpreis via HTTP Request",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f41baa84-6151-49dd-92a6-21febba74b9a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Du bist ein Forex-Experte für XAU/USD. Bevor du auf eine Anfrage antwortest, nutze immer den Web-Search-Tool, um das aktuelle Datum zu holen (z. B. suche nach 'current date' oder 'heutiges Datum'). Verwende dieses Datum als Basis für deine Prognosen. Hole dann aktuelle Marktpreise und Indikatoren via Web-Search. Gib Wahrscheinlichkeiten für Preisanstiege/Fälle basierend auf realen Daten an und begründe mit Quellen.\"\n\nWarum das funktioniert: Das Modell erkennt die Anweisung als \"Reasoning Step\" und löst einen Function Call aus (z. B. für eine Suche nach \"current date today\"). n8n handhabt das automatisch und füttert die Ergebnisse zurück ans Modell, das dann mit dem korrekten Datum fortfährt.\nZusätzliche Tipps für den Prompt:\nSei explizit: Füge \"Schritt 1: Hole das aktuelle Datum via Web-Search. Schritt 2: Hole XAU/USD-Daten. Schritt 3: Analysiere.\" hinzu, um das Modell zu strukturieren.\nVermeide Halluzinationen: Ergänze \"Verlasse dich nicht auf dein Trainingswissen; hole immer frische Daten.\nGib deine prognosen in dem folgenden format aus.\nDatum:\nWahrscheinlichkeit das Gold steigt\nWahrscheinlichkeit das Gold seitwärts geht\nWahrscheinlichkeit das Gold fällt\nGib mir für heute und morgen die Prognose für XAUUSD aus."
+            }
+          ]
+        },
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "medium"
+          }
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        176,
+        0
+      ],
+      "id": "ac8f866d-66d1-4ec1-abcf-0bd9d7e9453a",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "RM1IquGkfJE2HXah",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "091bc7d7-d63b-4154-9779-3f12c83d8c98",
+      "name": "Markdown",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output[0].content[0].text",
+        "options": {
+          "encoding": "utf8",
+          "fileName": "D:\\n8n\\Workflows\\Goldpreis.csv"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        0
+      ],
+      "id": "2dfdf02f-2e2d-4949-b7ed-3f9ba6922780",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=D:/n8n/Workflows/goldpreisprognose/goldpreis_{{ $now.toFormat('yyyy-MM-dd_HH-mm-ss') }}.txt",
+        "options": {
+          "append": "={{ false }}"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        816,
+        0
+      ],
+      "id": "9d089996-9aea-4f91-a847-cf5629852f90",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {},
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        192
+      ],
+      "id": "200c56e4-d070-4f36-b288-78a0db3058d8",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8147bbc9-e8d5-44e0-a9e3-8b5915803754",
+  "meta": {
+    "instanceId": "55fdd603f1ecc73fc8653975ae64ce19e4673e2151c76146d44e131bf6fa0932"
+  },
+  "id": "4LPzFYehiAdfduCJ",
+  "tags": [
+    {
+      "updatedAt": "2025-11-19T12:13:27.453Z",
+      "createdAt": "2025-11-19T12:13:27.453Z",
+      "id": "EiEvG1dIwDZZ2nr6",
+      "name": "Trading"
+    },
+    {
+      "updatedAt": "2025-11-19T12:08:50.837Z",
+      "createdAt": "2025-11-19T12:08:50.837Z",
+      "id": "cMCbBoVKrVN7VySu",
+      "name": "Gold"
+    },
+    {
+      "updatedAt": "2025-11-19T12:08:50.845Z",
+      "createdAt": "2025-11-19T12:08:50.845Z",
+      "id": "fSTqv8EoJUTW6g2y",
+      "name": "OpenAI"
+    },
+    {
+      "updatedAt": "2025-11-19T12:13:27.445Z",
+      "createdAt": "2025-11-19T12:13:27.445Z",
+      "id": "huR2jkplMEj2YU87",
+      "name": "GPT-4"
+    },
+    {
+      "updatedAt": "2025-11-19T12:08:50.851Z",
+      "createdAt": "2025-11-19T12:08:50.851Z",
+      "id": "p2egFr28kgNtagIy",
+      "name": "Finanzen"
+    }
+  ]
+}

@@ -1,0 +1,572 @@
+{
+  "name": "XAUUSD Gold Analysis - Serper + Grok",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "88db221a-38bb-4883-a5aa-adb62c07ee0c",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        320
+      ],
+      "notesInFlow": true,
+      "notes": "Täglich um 7:00 Uhr morgens"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aktuelles Datum und Suchanfragen vorbereiten\nconst today = new Date();\nconst dateStr = today.toISOString().split('T')[0];\nconst dateDE = today.toLocaleDateString('de-DE', { \n  weekday: 'long',\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\n\n// 5 verschiedene Suchanfragen für umfassende Analyse\nconst searches = [\n  {\n    query: `XAUUSD technical analysis ${dateStr}`,\n    type: \"search\",\n    description: \"Technische Analyse\"\n  },\n  {\n    query: \"gold price forecast tomorrow Federal Reserve\",\n    type: \"news\",\n    description: \"News und Forecasts\"\n  },\n  {\n    query: \"XAUUSD support resistance levels today\",\n    type: \"search\",\n    description: \"Support/Resistance\"\n  },\n  {\n    query: \"USD index gold correlation today\",\n    type: \"search\",\n    description: \"USD Impact\"\n  },\n  {\n    query: \"site:tradingview.com OR site:fxstreet.com XAUUSD\",\n    type: \"search\",\n    description: \"Trader Sentiment\"\n  }\n];\n\nreturn {\n  json: {\n    date: dateStr,\n    dateDE: dateDE,\n    timestamp: today.toISOString(),\n    searches: searches\n  }\n};"
+      },
+      "id": "f026eed4-b048-431c-8635-9071c4d16ec3",
+      "name": "Set Date & Searches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        320
+      ],
+      "notesInFlow": true,
+      "notes": "Datum und Suchanfragen vorbereiten"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "search1",
+              "name": "search",
+              "type": "object",
+              "value": "={{ $json.searches[0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "12967326-fb10-42a0-ab86-f264c995414f",
+      "name": "Split Searches",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"q\": \"{{ $json.search.query }}\",\n  \"type\": \"{{ $json.search.type }}\",\n  \"gl\": \"de\",\n  \"hl\": \"de\",\n  \"num\": 10,\n  \"tbs\": \"qdr:d\"\n}",
+        "options": {}
+      },
+      "id": "017098a1-2d6f-41d3-9527-0a898267ea5c",
+      "name": "Serper: Technical Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        656,
+        176
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rE6euPPUVtM1EeFU",
+          "name": "Header Auth account"
+        }
+      },
+      "notes": "Technische Analyse"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"q\": \"gold price forecast tomorrow Federal Reserve\",\n  \"type\": \"news\",\n  \"gl\": \"us\",\n  \"hl\": \"en\",\n  \"num\": 15,\n  \"tbs\": \"qdr:d\"\n}",
+        "options": {}
+      },
+      "id": "3a422a2c-f80c-4cde-9133-737acab5d176",
+      "name": "Serper: News & Forecasts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        544
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rE6euPPUVtM1EeFU",
+          "name": "Header Auth account"
+        }
+      },
+      "notes": "News und Prognosen"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"q\": \"XAUUSD support resistance levels today\",\n  \"type\": \"search\",\n  \"gl\": \"de\",\n  \"hl\": \"de\",\n  \"num\": 10,\n  \"tbs\": \"qdr:d\"\n}",
+        "options": {}
+      },
+      "id": "61214fdd-166a-47a3-be82-0724a0f92096",
+      "name": "Serper: Support/Resistance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        752
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rE6euPPUVtM1EeFU",
+          "name": "Header Auth account"
+        }
+      },
+      "notes": "Support & Resistance Levels"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"q\": \"USD index gold correlation today\",\n  \"type\": \"search\",\n  \"gl\": \"us\",\n  \"hl\": \"en\",\n  \"num\": 10,\n  \"tbs\": \"qdr:d\"\n}",
+        "options": {}
+      },
+      "id": "7413b5de-3dd1-4327-abad-f52ae01c732f",
+      "name": "Serper: USD Impact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        944
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rE6euPPUVtM1EeFU",
+          "name": "Header Auth account"
+        }
+      },
+      "notes": "USD-Einfluss auf Gold"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"q\": \"site:tradingview.com OR site:fxstreet.com XAUUSD\",\n  \"type\": \"search\",\n  \"gl\": \"us\",\n  \"hl\": \"en\",\n  \"num\": 10,\n  \"tbs\": \"qdr:d\"\n}",
+        "options": {}
+      },
+      "id": "7ceccf3d-c27c-4bf7-9088-b73c2d4966d0",
+      "name": "Serper: Trader Sentiment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        1104
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "rE6euPPUVtM1EeFU",
+          "name": "Header Auth account"
+        }
+      },
+      "notes": "Trader-Meinungen"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Alle Serper-Ergebnisse aggregieren und aufbereiten\nconst allItems = $input.all();\nconst allResults = [];\nconst categories = {};\n\n// Durch alle Items iterieren\nfor (const item of allItems) {\n  const data = item.json;\n  \n  // Answer Box (wenn vorhanden)\n  if (data.answerBox) {\n    allResults.push({\n      type: 'answer',\n      title: data.answerBox.title || 'Answer',\n      content: data.answerBox.snippet || data.answerBox.answer || '',\n      source: 'Google Answer Box'\n    });\n  }\n  \n  // Organic Ergebnisse\n  if (data.organic && Array.isArray(data.organic)) {\n    for (const result of data.organic.slice(0, 5)) {\n      allResults.push({\n        type: 'organic',\n        title: result.title,\n        snippet: result.snippet,\n        link: result.link,\n        date: result.date || 'keine Angabe',\n        position: result.position\n      });\n    }\n  }\n  \n  // News Ergebnisse\n  if (data.news && Array.isArray(data.news)) {\n    for (const news of data.news.slice(0, 5)) {\n      allResults.push({\n        type: 'news',\n        title: news.title,\n        snippet: news.snippet,\n        link: news.link,\n        date: news.date || 'keine Angabe',\n        source: news.source\n      });\n    }\n  }\n}\n\n// Formatiere für AI Agent\nconst formattedText = allResults.map((result, index) => {\n  let text = `\\n[${index + 1}] ${result.type.toUpperCase()}: ${result.title}\\n`;\n  \n  if (result.content) {\n    text += `${result.content}\\n`;\n  }\n  \n  if (result.snippet) {\n    text += `${result.snippet}\\n`;\n  }\n  \n  if (result.link) {\n    text += `Quelle: ${result.link}\\n`;\n  }\n  \n  if (result.date) {\n    text += `Datum: ${result.date}\\n`;\n  }\n  \n  text += '---';\n  return text;\n}).join('\\n\\n');\n\nconst today = new Date().toLocaleDateString('de-DE', {\n  weekday: 'long',\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\n\nreturn {\n  json: {\n    researchData: formattedText,\n    resultCount: allResults.length,\n    today: today,\n    timestamp: new Date().toISOString(),\n    rawResults: allResults\n  }\n};"
+      },
+      "id": "b98edfa0-af03-444f-b4f8-87ad6ea0da60",
+      "name": "Aggregate All Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        400
+      ],
+      "notesInFlow": true,
+      "notes": "Alle Serper-Ergebnisse zusammenführen und formatieren"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "prompt",
+              "name": "systemPrompt",
+              "type": "string",
+              "value": "Du bist ein hochspezialisierter XAUUSD (Gold/USD) Forex-Analyst. Deine Aufgabe ist es, basierend auf Web-Recherche-Ergebnissen eine fundierte Wahrscheinlichkeitsanalyse für die Goldpreisentwicklung zu erstellen.\n\n**ANALYSEMETHODIK:**\n\n1. **Technische Analyse - Gewichtung:**\n   - Trendrichtung (H1, H4, Daily): 30%\n   - RSI-Niveau (überkauft >70, überverkauft <30): 15%\n   - MACD-Signale (Crossover, Divergenzen): 15%\n   - Support/Resistance-Levels: 20%\n   - Moving Averages (20, 50, 200 EMA): 10%\n   - Candlestick-Patterns: 10%\n\n2. **Fundamentale Analyse - Gewichtung:**\n   - USD-Stärke/Schwäche: 35%\n   - Fed-Politik und Zinsentwicklung: 30%\n   - Geopolitische Ereignisse: 20%\n   - Wirtschaftsdaten (NFP, CPI, PMI): 15%\n\n3. **Wahrscheinlichkeitsberechnung:**\n\n   **STEIGEND-Wahrscheinlichkeit erhöht sich bei:**\n   - USD schwächer\n   - RSI zwischen 40-65 (bullish momentum)\n   - MACD positiv mit bullischem Crossover\n   - Preis über 20-EMA und 50-EMA\n   - Dovish Fed-Signale\n   - Geopolitische Spannungen steigend\n   - Bullische Candlestick-Patterns\n   \n   **SEITWÄRTS-Wahrscheinlichkeit erhöht sich bei:**\n   - USD stabil (±0,2%)\n   - RSI zwischen 45-55 (neutral)\n   - Preis in enger Range\n   - Vor wichtigen Wirtschaftsdaten\n   - Unklare Marktsignale\n   \n   **FALLEND-Wahrscheinlichkeit erhöht sich bei:**\n   - USD stark steigend\n   - RSI über 70 (überkauft)\n   - Preis unter 20-EMA fällt\n   - Hawkish Fed-Signale\n   - Geopolitische Entspannung\n   - Bearische Candlestick-Patterns\n\n**AUSGABEFORMAT:**\n\nErstelle IMMER diese strukturierte Analyse:\n\n```\n🔍 XAUUSD ANALYSE für [DATUM]\n\n📊 AKTUELLER STAND:\n- Preis: [aktueller Kurs]\n- Tagesrange: [Low - High]\n- 24h-Veränderung: [+/- %]\n\n📈 WAHRSCHEINLICHKEITEN:\n\nSTEIGEND: [XX]%\nHauptgründe:\n- [Grund 1 mit Datenquelle]\n- [Grund 2 mit Datenquelle]\n- [Grund 3 mit Datenquelle]\n\nSEITWÄRTS: [XX]%\nHauptgründe:\n- [Grund 1 mit Datenquelle]\n- [Grund 2 mit Datenquelle]\n\nFALLEND: [XX]%\nHauptgründe:\n- [Grund 1 mit Datenquelle]\n- [Grund 2 mit Datenquelle]\n\n🎯 TECHNISCHE LEVELS:\n- Widerstand: [Level 1], [Level 2], [Level 3]\n- Unterstützung: [Level 1], [Level 2], [Level 3]\n\n📰 WICHTIGE EVENTS HEUTE:\n- [Event 1 mit Uhrzeit]\n- [Event 2 mit Uhrzeit]\n\n💡 TRADING-BIAS: [BULLISH/NEUTRAL/BEARISH]\n\n⚠️ RISIKOFAKTOREN:\n- [Faktor 1]\n- [Faktor 2]\n\n🔗 Quellen: [Liste der verwendeten Analysen]\n```\n\n**WICHTIGE REGELN:**\n- Wahrscheinlichkeiten müssen IMMER genau 100% ergeben\n- Keine Wahrscheinlichkeit unter 5% oder über 85%\n- Bei unsicherer Datenlage: höhere Seitwärts-Wahrscheinlichkeit\n- IMMER mindestens 3 verschiedene Quellen zitieren\n- Technische UND fundamentale Faktoren berücksichtigen\n- Bei widersprüchlichen Signalen: konservatives Szenario bevorzugen\n\n**TONALITÄT:** Professionell, präzise, datenbasiert, ohne Spekulation"
+            },
+            {
+              "id": "user-message",
+              "name": "userMessage",
+              "type": "string",
+              "value": "=Analysiere diese Web-Recherche-Ergebnisse und erstelle eine XAUUSD-Wahrscheinlichkeitsanalyse:\n\n{{ $json.researchData }}\n\nHeute ist: {{ $json.today }}\n\nErstelle jetzt die vollständige Analyse mit Wahrscheinlichkeiten für HEUTE und MORGEN."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ac6c8233-afc7-49b9-957b-d36a935006ae",
+      "name": "Prepare AI Prompt",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        400
+      ],
+      "notesInFlow": true,
+      "notes": "System-Prompt und User-Message vorbereiten"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "6bef9499-3017-4d27-83c1-fdab0563f631",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1344,
+        400
+      ],
+      "notesInFlow": true,
+      "notes": "Grok analysiert die Daten"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Formatiere die Ausgabe schön\nconst aiResponse = $input.item.json.output;\nconst today = $('Aggregate All Results').item.json.today;\nconst timestamp = $('Aggregate All Results').item.json.timestamp;\nconst resultCount = $('Aggregate All Results').item.json.resultCount;\n\n// Erstelle formatierte Nachricht\nconst formattedOutput = `\n╔════════════════════════════════════════╗\n║   XAUUSD GOLD ANALYSE                  ║\n║   ${today}                              ║\n╚════════════════════════════════════════╝\n\n${aiResponse}\n\n────────────────────────────────────────\n📊 Datengrundlage: ${resultCount} Quellen analysiert\n⏰ Erstellt: ${new Date(timestamp).toLocaleString('de-DE')}\n🤖 Powered by: Serper + Grok AI\n────────────────────────────────────────\n`;\n\nreturn {\n  json: {\n    analysis: aiResponse,\n    formatted: formattedOutput,\n    timestamp: timestamp,\n    date: today,\n    sourceCount: resultCount\n  }\n};"
+      },
+      "id": "f5e0faed-e11e-4b7d-8046-955346b84e83",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        400
+      ],
+      "notesInFlow": true,
+      "notes": "Ausgabe schön formatieren"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "final",
+              "name": "finalAnalysis",
+              "type": "string",
+              "value": "={{ $json.formatted }}"
+            },
+            {
+              "id": "raw",
+              "name": "rawAnalysis",
+              "type": "string",
+              "value": "={{ $json.analysis }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9cd90f44-4abe-4e2f-8144-c15a645e2912",
+      "name": "Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1824,
+        400
+      ],
+      "notesInFlow": true,
+      "notes": "Hier kannst du Telegram, Email, oder File-Save anhängen"
+    },
+    {
+      "parameters": {
+        "model": "grok-4-0709",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatXAiGrok",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        656
+      ],
+      "id": "670706cb-1c76-474d-8d3b-9a06152b85a3",
+      "name": "xAI Grok Chat Model1",
+      "credentials": {
+        "xAiApi": {
+          "id": "JkmHhNaGffWgRSAT",
+          "name": "xAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Date & Searches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Date & Searches": {
+      "main": [
+        [
+          {
+            "node": "Split Searches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Searches": {
+      "main": [
+        [
+          {
+            "node": "Serper: Technical Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Serper: News & Forecasts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Serper: Support/Resistance",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Serper: USD Impact",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Serper: Trader Sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper: Technical Analysis": {
+      "main": [
+        [
+          {
+            "node": "Aggregate All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper: News & Forecasts": {
+      "main": [
+        [
+          {
+            "node": "Aggregate All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper: Support/Resistance": {
+      "main": [
+        [
+          {
+            "node": "Aggregate All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper: USD Impact": {
+      "main": [
+        [
+          {
+            "node": "Aggregate All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Serper: Trader Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Aggregate All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate All Results": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "xAI Grok Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d22a803d-efd8-49de-a993-bf969cb01ce6",
+  "meta": {
+    "instanceId": "55fdd603f1ecc73fc8653975ae64ce19e4673e2151c76146d44e131bf6fa0932"
+  },
+  "id": "2E2OqDG5cRKrQ1ur",
+  "tags": [
+    {
+      "updatedAt": "2025-11-19T12:13:27.453Z",
+      "createdAt": "2025-11-19T12:13:27.453Z",
+      "id": "EiEvG1dIwDZZ2nr6",
+      "name": "Trading"
+    },
+    {
+      "updatedAt": "2025-11-19T12:08:50.837Z",
+      "createdAt": "2025-11-19T12:08:50.837Z",
+      "id": "cMCbBoVKrVN7VySu",
+      "name": "Gold"
+    },
+    {
+      "name": "XAUUSD",
+      "id": "x5QLmo2hebtWiZp3",
+      "updatedAt": "2025-12-15T20:14:20.999Z",
+      "createdAt": "2025-12-15T20:14:20.999Z"
+    }
+  ]
+}

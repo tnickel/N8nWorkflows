@@ -1,0 +1,315 @@
+{
+  "name": "Goldpreis via HTTP Request",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        256
+      ],
+      "id": "f41baa84-6151-49dd-92a6-21febba74b9a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Du bist ein Forex-Experte für XAU/USD. Bevor du auf eine Anfrage antwortest, nutze immer den Web-Search-Tool, um das aktuelle Datum zu holen (z. B. suche nach 'current date' oder 'heutiges Datum'). Verwende dieses Datum als Basis für deine Prognosen. Hole dann aktuelle Marktpreise und Indikatoren via Web-Search. Gib Wahrscheinlichkeiten für Preisanstiege/Fälle basierend auf realen Daten an und begründe mit Quellen.\"\n\nWarum das funktioniert: Das Modell erkennt die Anweisung als \"Reasoning Step\" und löst einen Function Call aus (z. B. für eine Suche nach \"current date today\"). n8n handhabt das automatisch und füttert die Ergebnisse zurück ans Modell, das dann mit dem korrekten Datum fortfährt.\nZusätzliche Tipps für den Prompt:\nSei explizit: Füge \"Schritt 1: Hole das aktuelle Datum via Web-Search. Schritt 2: Hole XAU/USD-Daten. Schritt 3: Analysiere.\" hinzu, um das Modell zu strukturieren.\nVermeide Halluzinationen: Ergänze \"Verlasse dich nicht auf dein Trainingswissen; hole immer frische Daten.\nGib deine prognosen in dem folgenden format aus.\nDatum:\nWahrscheinlichkeit das Gold steigt\nWahrscheinlichkeit das Gold seitwärts geht\nWahrscheinlichkeit das Gold fällt\nGib mir für heute und morgen die Prognose für XAUUSD aus.\n\nListe auch deine Quellen auf und auch Erklärungen wie du zu den Aussagen kommst."
+            }
+          ]
+        },
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "medium"
+          }
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        176,
+        0
+      ],
+      "id": "ac8f866d-66d1-4ec1-abcf-0bd9d7e9453a",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "RM1IquGkfJE2HXah",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "091bc7d7-d63b-4154-9779-3f12c83d8c98",
+      "name": "Markdown",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output[0].content[0].text",
+        "options": {
+          "encoding": "utf8",
+          "fileName": "D:\\n8n\\Workflows\\Goldpreis.csv"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        0
+      ],
+      "id": "2dfdf02f-2e2d-4949-b7ed-3f9ba6922780",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=C:\\Users\\tnickel\\.n8n-files/XAUUSD/goldpreis_{{ $now.toFormat('yyyy-MM-dd_HH-mm-ss') }}.txt",
+        "options": {
+          "append": "={{ false }}"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        816,
+        0
+      ],
+      "id": "9d089996-9aea-4f91-a847-cf5629852f90",
+      "name": "Read/Write Files from Disk",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Du bist ein Forex-Experte für EUR/USD. Bevor du auf eine Anfrage antwortest, nutze immer den Web-Search-Tool, um das aktuelle Datum zu holen (z. B. suche nach 'current date' oder 'heutiges Datum'). Verwende dieses Datum als Basis für deine Prognosen. Hole dann aktuelle Marktpreise und Indikatoren via Web-Search. Gib Wahrscheinlichkeiten für Preisanstiege/Fälle basierend auf realen Daten an und begründe mit Quellen.\"\n\nWarum das funktioniert: Das Modell erkennt die Anweisung als \"Reasoning Step\" und löst einen Function Call aus (z. B. für eine Suche nach \"current date today\"). n8n handhabt das automatisch und füttert die Ergebnisse zurück ans Modell, das dann mit dem korrekten Datum fortfährt.\nZusätzliche Tipps für den Prompt:\nSei explizit: Füge \"Schritt 1: Hole das aktuelle Datum via Web-Search. Schritt 2: Hole EUR/USD-Daten. Schritt 3: Analysiere.\" hinzu, um das Modell zu strukturieren.\nVermeide Halluzinationen: Ergänze \"Verlasse dich nicht auf dein Trainingswissen; hole immer frische Daten.\nGib deine prognosen in dem folgenden format aus.\nDatum:\nWahrscheinlichkeit das Gold steigt\nWahrscheinlichkeit das Gold seitwärts geht\nWahrscheinlichkeit das Gold fällt\nGib mir für heute und morgen die Prognose für EURUSD aus.\n\nListe auch deine Quellen auf und auch Erklärungen wie du zu den Aussagen kommst."
+            }
+          ]
+        },
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "medium"
+          }
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        176,
+        256
+      ],
+      "id": "5d7a40c0-d072-492b-87e4-059bdfe1fa3b",
+      "name": "Message a model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "RM1IquGkfJE2HXah",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        480,
+        256
+      ],
+      "id": "111bc1b4-8207-4751-aaee-9943bed6bbac",
+      "name": "Markdown1",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output[0].content[0].text",
+        "options": {
+          "encoding": "utf8",
+          "fileName": "D:\\n8n\\Workflows\\Goldpreis.csv"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        256
+      ],
+      "id": "1dc8624e-113a-4005-a397-be76c0ff1e58",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=C:\\Users\\tnickel\\.n8n-files/EURUSD/EURUSD_{{ $now.toFormat('yyyy-MM-dd_HH-mm-ss') }}.txt",
+        "options": {
+          "append": "={{ false }}"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        816,
+        256
+      ],
+      "id": "0a2f6822-bfcd-4059-ad15-1c197aa28aa6",
+      "name": "Read/Write Files from Disk1",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Markdown1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d0c72a15-939c-4369-9af5-6970e4795c5d",
+  "meta": {
+    "instanceId": "55fdd603f1ecc73fc8653975ae64ce19e4673e2151c76146d44e131bf6fa0932"
+  },
+  "id": "4LPzFYehiAdfduCJ",
+  "tags": [
+    {
+      "updatedAt": "2025-11-19T12:13:27.453Z",
+      "createdAt": "2025-11-19T12:13:27.453Z",
+      "id": "EiEvG1dIwDZZ2nr6",
+      "name": "Trading"
+    },
+    {
+      "updatedAt": "2025-11-19T12:08:50.837Z",
+      "createdAt": "2025-11-19T12:08:50.837Z",
+      "id": "cMCbBoVKrVN7VySu",
+      "name": "Gold"
+    },
+    {
+      "updatedAt": "2025-11-19T12:08:50.845Z",
+      "createdAt": "2025-11-19T12:08:50.845Z",
+      "id": "fSTqv8EoJUTW6g2y",
+      "name": "OpenAI"
+    },
+    {
+      "updatedAt": "2025-11-19T12:13:27.445Z",
+      "createdAt": "2025-11-19T12:13:27.445Z",
+      "id": "huR2jkplMEj2YU87",
+      "name": "GPT-4"
+    },
+    {
+      "updatedAt": "2025-11-19T12:08:50.851Z",
+      "createdAt": "2025-11-19T12:08:50.851Z",
+      "id": "p2egFr28kgNtagIy",
+      "name": "Finanzen"
+    }
+  ]
+}
