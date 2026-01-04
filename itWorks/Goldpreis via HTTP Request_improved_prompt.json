@@ -1,0 +1,223 @@
+{
+  "name": "Goldpreis via HTTP Request",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "decf03a0-1db9-4bde-9b84-0f740506fc9c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Rolle: Handle als Senior Quantitative Analyst & Hedgefonds-Strategist für XAU/USD.\n\nAufgabe: Erstelle eine tiefgreifende Gold-Analyse inklusive statistischer Herleitung und Trading-Setup.\n\nWICHTIGE FXSSI-LOGIK (Kontra-Indikator):\n\nPrüfe das Retail-Sentiment auf https://fxssi.com/tools/\n\n60% LONG = Bärisches Signal (Verkaufsdruck).\n\n60% SHORT = Bullisches Signal (Kaufdruck).\n\nBerücksichtige die Richtung des Sentiment-Pfeils.\n\nRecherche-Quellen:\n\nLive-Daten: Aktueller Kurs, Charttechnik (RSI, MACD, Pivot-Punkte, EMAs).\n\nSentiment: FXSSI, X-Kanäle, Reddit, TradingView Community.\n\nFundamental: FOMC-Meldungen, US-Dollar-Index (DXY), Geopolitik, Saisonalität.\n\nInstitutionen: J.P. Morgan, Goldman Sachs, Citibank Analysen.\n\nTEIL 1: STATISTISCHE DATEN (Striktes Format) Datum: [Aktuelles Datum] Wahrscheinlichkeit, dass Gold steigt: [X]% Wahrscheinlichkeit, dass Gold seitwärts geht: [X]% Wahrscheinlichkeit, dass Gold fällt: [X]%\n\nDatum: [Datum Morgen] Wahrscheinlichkeit, dass Gold steigt: [X]% Wahrscheinlichkeit, dass Gold seitwärts geht: [X]% Wahrscheinlichkeit, dass Gold fällt: [X]%\n\nDatum: [Datum heute in 6 Monaten] Wahrscheinlichkeit, dass Gold steigt: [X]% Wahrscheinlichkeit, dass Gold seitwärts geht: [X]% Wahrscheinlichkeit, dass Gold fällt: [X]%\n\nTEIL 2: NUMERISCHE HERLEITUNG (Gewichtung) Zeige kurz auf, wie sich die heutige Wahrscheinlichkeit zusammensetzt:\n\nCharttechnik (40% Gewicht): [Einschätzung Bullisch/Bärisch]\n\nSentiment/FXSSI (30% Gewicht): [Einschätzung Bullisch/Bärisch]\n\nMakro/News (30% Gewicht): [Einschätzung Bullisch/Bärisch]\n\nErgebnis: [Kurze numerische Summenbildung]\n\nTEIL 3: INTRADAY TRADING LEVELS (XAU/USD)\n\nEntry (Einstieg): [Preis] USD\n\nStop Loss (SL): [Preis] USD\n\nTake Profit (TP): [Preis] USD\n\nRisiko/Chance (CRV): [Verhältnis]\n\nTEIL 4: BEGRÜNDUNGEN (Narrow-Layout) Format: Kurze Sätze, max. 50 Zeichen pro Zeile, viele Umbrüche.\n\n1. Detail Charttechnik: [Analyse von Support, Resistance & Indikatoren]\n\n2. Sentiment & FXSSI Analyse: [Detaillierte Interpretation der Kontra-Logik]\n\n3. Fundamentaldaten & News: [Einfluss von FOMC, Geopolitik & Saisonalität]"
+            }
+          ]
+        },
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "medium"
+          }
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        176,
+        0
+      ],
+      "id": "50477597-2a8c-4f81-8e85-f07b31b55427",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "TfEl1kDD3DTm8T8o",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "444af8fb-b4a9-466b-9a66-2be84cb899b3",
+      "name": "Markdown",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output[0].content[0].text",
+        "options": {
+          "encoding": "utf8",
+          "fileName": "D:\\n8n\\Workflows\\Goldpreis.csv"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        0
+      ],
+      "id": "7e0739ac-d983-4c0f-b6f4-31742ab22d03",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=C:\\Users\\tnickel\\.n8n-files/xauusd/goldpreis_{{ $now.toFormat('yyyy-MM-dd_HH-mm-ss') }}.txt",
+        "options": {
+          "append": "={{ false }}"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        816,
+        0
+      ],
+      "id": "71accc44-7a71-4b2c-86d7-e8ea24060c94",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {},
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        192
+      ],
+      "id": "107bc3c8-6b33-4651-8888-92538ddfdcb8",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "c8c67b3d-3364-4834-afd1-15c4c631f24b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b9bc7469b74f5be3f972da243d0d3277d99ba660f460c89ca1b54bd1e05d2afd"
+  },
+  "id": "5iXPqgBxF2JQhZxc",
+  "tags": [
+    {
+      "updatedAt": "2026-01-02T15:46:41.487Z",
+      "createdAt": "2026-01-02T15:46:41.487Z",
+      "id": "giZXSlPMeuj5PhF5",
+      "name": "Trading"
+    },
+    {
+      "updatedAt": "2026-01-02T15:46:41.493Z",
+      "createdAt": "2026-01-02T15:46:41.493Z",
+      "id": "dwPprX4Vsz7saLdF",
+      "name": "Gold"
+    },
+    {
+      "updatedAt": "2026-01-02T15:46:41.492Z",
+      "createdAt": "2026-01-02T15:46:41.492Z",
+      "id": "TQcjiptIeA7vm74W",
+      "name": "OpenAI"
+    },
+    {
+      "updatedAt": "2026-01-02T15:46:41.496Z",
+      "createdAt": "2026-01-02T15:46:41.496Z",
+      "id": "xaaXj3w6nWJFlTsF",
+      "name": "GPT-4"
+    },
+    {
+      "updatedAt": "2026-01-02T15:46:41.498Z",
+      "createdAt": "2026-01-02T15:46:41.498Z",
+      "id": "OSLJAx1EQY7fW90v",
+      "name": "Finanzen"
+    }
+  ]
+}
